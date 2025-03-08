@@ -51,3 +51,38 @@ h = xi+1 - xi
 
 pn(x) = pn(xn+sh) = f[xn] + sh*f[xn,xn-1] + s(s+1)h^2*f[xn, xn-1, xn-2] + ... + s(s+1)...(s+n-1)h^n f[xn,xn-1,...,x0]
 -/
+
+
+
+/-
+DIVIDED DIFFERENCE:
+backward difference
+def given sequence: {Pn}^∞_n=0
+the backwards difference is:
+        ∇pn : ∇pn = pn - pn-1 n >= 1, with
+        ∇²pn = ∇(∇pn)   = ∇pn - ∇pn-1
+                        = pn-pn-1 - (pn-1 - pn-2)
+                        = pn - 2pn-1 + pn-2
+
+in general, ∇ᵏ = ∇(∇ᵏ⁻¹pₙ)
+
+
+Pₙ(x) = f[⬝xₙ] + ∑ⁿₖ₌₁(-1)ᵏ(⁻ˢₖ)∇ᵏf(xₙ)
+
+
+Pₙ(t) is an interpolating polynomial (tᵢ, f(tᵢ, y(tᵢ)), (tᵢ₋₁), y(tᵢ₋₁))
+
+∃εᵢ∈(tᵢ₍ₘ₋₁₎, tᵢ) wᵢ+h
+
+
+
+
+let t = tᵢ + sh
+x = xₙ+sh
+
+
+MULTI STEP METHODS: weird constants in RK4 pop up due to integrating random polynomials
+
+
+
+-/

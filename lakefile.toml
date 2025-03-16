@@ -1,0 +1,10 @@
+name = "NumericalAnalysis"
+version = "0.1.0"
+defaultTargets = ["numericalanalysis"]
+
+[[lean_lib]]
+name = "NumericalAnalysis"
+
+[[lean_exe]]
+name = "numericalanalysis"
+root = "Main"

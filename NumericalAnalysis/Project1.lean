@@ -75,8 +75,10 @@ def calculateAllSolutions (f : Float → Float → Float)
   let ab3Results := ab3 f t0 y0 h steps
 
   -- Extract values in correct time order
-  let eulerValues := eulerResults.reverse.map (λ (_, y) => y)
-  let rk4Values := rk4Results.reverse.map (λ (_, y) => y)
+  --let eulerValues := eulerResults.reverse.map (λ (_, y) => y)
+  --let rk4Values := rk4Results.reverse.map (λ (_, y) => y)
+  let eulerValues := eulerResults.map (λ (_, y) => y)
+  let rk4Values := rk4Results.map (λ (_, y) => y)
   let ab3Values := ab3Results.reverse.map (λ (_, y) => y)
 
   -- Calculate exact values
@@ -160,7 +162,9 @@ def runSimulation (t0 : Float) (tMax : Float) (h : Float) : IO Unit := do
 
 -- Run the simulation with specific parameters
 def main : IO Unit :=
-  runSimulation 0.0 1.0 0.1
+  -- 1e-5 [0..1] seems to be the limit. Stack size limit on most
+  -- computers is 10k, so this tracts
+  runSimulation 0.0 1.0 0.0001
 
 end Project1
 

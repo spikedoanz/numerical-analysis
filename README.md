@@ -22,7 +22,7 @@ This will compile the project and also
 git clone git@github.com:spikedoanz/numerical-analysis.git
 cd numerical-analysis
 lake build
-./.lake/build/bin/numerical-analysis > result.txt
+./.lake/build/bin/numericalanalysis > result.txt
 ```
 
 3. Vizualize results
@@ -37,5 +37,12 @@ pip install matplotlib pandas prettytable
 
 Run visualization script (will read result.txt file)
 ```
+python viz.py
+```
+
+In short, to rerun the experiments with changed parameters (this is run.sh)
+```
+lake build
+./.lake/build/bin/numericalanalysis
 python viz.py
 ```

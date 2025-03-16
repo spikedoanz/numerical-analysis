@@ -1,4 +1,41 @@
-# numerical-analysis
+# Numerical Analysis
 
+## Project 1
 
-Juila's implementation of logs are in base/special/log.jl
+The code for the project sits in NumericalAnalysis/Project1.lean
+
+The outputs of the implementations are in results.txt (which contain 2 csvs),
+and visualized in result.png
+
+---
+
+### Instructions
+
+1. Install Lean
+
+Follow the official instructions from the [documentation](https://leanprover-community.github.io/get_started.html)
+
+2. Build and run project
+
+This will compile the project and also 
+```
+git clone git@github.com:spikedoanz/numerical-analysis.git
+cd numerical-analysis
+lake build
+./.lake/build/bin/numerical-analysis > result.txt
+```
+
+3. Vizualize results
+
+Create python environment
+
+```
+python3 -m venv .venv
+source .venv/bin/activate
+pip install matplotlib pandas prettytable
+```
+
+Run visualization script (will read result.txt file)
+```
+python viz.py
+```

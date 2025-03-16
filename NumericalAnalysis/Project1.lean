@@ -6,7 +6,7 @@ open Float (abs exp)
 def V0 : Float := 12.0     -- Initial voltage (12V)
 def R : Float := 12000.0   -- Resistance (12 kOhms)
 def C : Float := 0.0001    -- Capacitance (100 microFarads)
-def RC : Float := R * C    -- Time constant
+def RC : Float := R * C    -- Time constant (to avoid recomputation)
 
 def f (t : Float) (V : Float) : Float := -V / RC
 
@@ -78,16 +78,14 @@ def calculateAllSolutions (f : Float → Float → Float)
   --let eulerValues := eulerResults.reverse.map (λ (_, y) => y)
   --let rk4Values := rk4Results.reverse.map (λ (_, y) => y)
   let eulerValues := eulerResults.map (λ (_, y) => y)
-  let rk4Values := rk4Results.map (λ (_, y) => y)
-  let ab3Values := ab3Results.reverse.map (λ (_, y) => y)
+  let rk4Values   := rk4Results.map (λ (_, y) => y)
+  let ab3Values   := ab3Results.reverse.map (λ (_, y) => y)
 
   -- Calculate exact values
   let exactValues := timePoints.map exact
-
-  -- Calculate differences
-  let eulerDiffs := zipWith (λ x y => abs (x - y)) exactValues eulerValues
-  let rk4Diffs := zipWith (λ x y => abs (x - y)) exactValues rk4Values
-  let ab3Diffs := zipWith (λ x y => abs (x - y)) exactValues ab3Values
+  let eulerDiffs  := zipWith (λ x y => abs (x - y)) exactValues eulerValues
+  let rk4Diffs    := zipWith (λ x y => abs (x - y)) exactValues rk4Values
+  let ab3Diffs    := zipWith (λ x y => abs (x - y)) exactValues ab3Values
 
   [timePoints, exactValues, eulerValues, rk4Values, ab3Values, eulerDiffs, rk4Diffs, ab3Diffs]
 
@@ -99,21 +97,13 @@ def generateCSV (results : List (List Float)) : String :=
   let rk4Values := results[3]!
   let ab3Values := results[4]!
 
-  -- Build the header row with time points
-  let headerRow := "time," ++
-                   String.intercalate "," (timePoints.map toString)
+  -- Build the csv
+  let headerRow := "time,"      ++ String.intercalate "," (timePoints.map toString)
+  let exactRow  := "explicit,"  ++ String.intercalate "," (exactValues.map toString)
+  let eulerRow  := "euler,"     ++ String.intercalate "," (eulerValues.map toString)
+  let rk4Row    := "rk4,"       ++ String.intercalate "," (rk4Values.map toString)
+  let ab3Row    := "ab3,"       ++ String.intercalate "," (ab3Values.map toString)
 
-  -- Build the data rows
-  let exactRow := "explicit," ++
-                  String.intercalate "," (exactValues.map toString)
-  let eulerRow := "euler," ++
-                  String.intercalate "," (eulerValues.map toString)
-  let rk4Row := "rk4," ++
-                String.intercalate "," (rk4Values.map toString)
-  let ab3Row := "ab3," ++
-                String.intercalate "," (ab3Values.map toString)
-
-  -- Combine all rows
   String.intercalate "\n" [headerRow, exactRow, eulerRow, rk4Row, ab3Row]
 
 -- Function to generate CSV for differences
@@ -144,14 +134,12 @@ def runSimulation (t0 : Float) (tMax : Float) (h : Float) : IO Unit := do
   --this has to be done instead.
   let steps := ((tMax - t0) / h).toUInt32.toNat
 
-  -- Calculate all solutions
+  -- Calculate results
   let results := calculateAllSolutions f exactSolution t0 V0 h steps
-
-  -- Generate CSV outputs
   let solutionsCSV  := generateCSV results
   let diffsCSV      := generateDiffCSV results
 
-  -- Print the results
+  -- Print the results (no built in csv library so i have to do jank)
   IO.println "<solutions>"
   IO.println solutionsCSV
   IO.println "</solutions>"
@@ -164,7 +152,7 @@ def runSimulation (t0 : Float) (tMax : Float) (h : Float) : IO Unit := do
 def main : IO Unit :=
   -- 1e-5 [0..1] seems to be the limit. Stack size limit on most
   -- computers is 10k, so this tracts
-  runSimulation 0.0 1.0 0.0001
+  runSimulation 0.0 10.0 0.1
 
 end Project1
 

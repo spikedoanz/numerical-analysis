@@ -1,6 +1,7 @@
 /.lake
 *venv/
 *__pycache__/
+*result*
 
 # Added by cargo
 

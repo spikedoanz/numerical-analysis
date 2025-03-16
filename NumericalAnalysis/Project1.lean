@@ -1,6 +1,7 @@
 set_option linter.unusedVariables false
 namespace Project1
 open List(range zipWith)
+open Float (abs exp)
 
 def V0 : Float := 12.0     -- Initial voltage (12V)
 def R : Float := 12000.0   -- Resistance (12 kOhms)
@@ -9,20 +10,14 @@ def RC : Float := R * C    -- Time constant
 
 def f (t : Float) (V : Float) : Float := -V / RC
 
-def exactSolution (t : Float) : Float := V0 * (Float.exp (-t / RC))
+def exactSolution (t : Float) : Float := V0 * exp (-t / RC)
 
--- Utility functions
-def abs (a : Float) : Float :=
-  if a >= 0 then a else -a
-
--- Euler's method in concise functional style
 def euler (f : Float → Float → Float)
           (t0 : Float) (y0 : Float) (h : Float)
           : Nat → List (Float × Float)
   | 0 => [(t0, y0)]
   | n + 1 => (t0, y0) :: euler f (t0 + h) (y0 + h * f t0 y0) h n
 
--- 4th-order Runge-Kutta method in functional style
 def rk4 (f : Float → Float → Float)
         (t0 : Float) (y0 : Float) (h : Float)
         : Nat → List (Float × Float)
@@ -35,7 +30,6 @@ def rk4 (f : Float → Float → Float)
     let y_next := y0 + (k₁ + 2*k₂ + 2*k₃ + k₄)/6
     (t0, y0) :: rk4 f (t0 + h) y_next h n
 
--- Adams-Bashforth 3rd order method in functional style
 def ab3 (f : Float → Float → Float)
         (t0 : Float) (y0 : Float) (h : Float)
         : Nat → List (Float × Float)

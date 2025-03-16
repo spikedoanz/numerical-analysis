@@ -113,19 +113,12 @@ def generateDiffCSV (results : List (List Float)) : String :=
   let rk4Diffs := results[6]!
   let ab3Diffs := results[7]!
 
-  -- Build the header row with time points
-  let headerRow := "function," ++
-                   String.intercalate "," (timePoints.map toString)
+  -- Build the csv
+  let headerRow := "function,"    ++ String.intercalate "," (timePoints.map toString)
+  let eulerRow  := "euler_diff,"  ++ String.intercalate "," (eulerDiffs.map toString)
+  let rk4Row    := "rk4_diff,"    ++ String.intercalate "," (rk4Diffs.map toString)
+  let ab3Row    := "ab3_diff,"    ++ String.intercalate "," (ab3Diffs.map toString)
 
-  -- Build the data rows
-  let eulerRow := "euler_diff," ++
-                  String.intercalate "," (eulerDiffs.map toString)
-  let rk4Row := "rk4_diff," ++
-                String.intercalate "," (rk4Diffs.map toString)
-  let ab3Row := "ab3_diff," ++
-                String.intercalate "," (ab3Diffs.map toString)
-
-  -- Combine all rows
   String.intercalate "\n" [headerRow, eulerRow, rk4Row, ab3Row]
 
 -- Main simulation function

@@ -1,4 +1,4 @@
-import NumericalAnalysis
+import NumericalAnalysis.Project1
 
 def main : IO Unit :=
-  IO.println s!"Hello, {hello}!"
+  Project1.main

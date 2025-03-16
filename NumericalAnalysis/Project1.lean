@@ -1,30 +1,19 @@
+set_option linter.unusedVariables false
 namespace Project1
+open List(range zipWith)
 
--- Common parameters for RC circuit
 def V0 : Float := 12.0     -- Initial voltage (12V)
 def R : Float := 12000.0   -- Resistance (12 kOhms)
 def C : Float := 0.0001    -- Capacitance (100 microFarads)
 def RC : Float := R * C    -- Time constant
 
--- The differential equation dV/dt = -V/RC
 def f (t : Float) (V : Float) : Float := -V / RC
 
--- Exact solution V(t) = V0 * e^(-t/RC)
 def exactSolution (t : Float) : Float := V0 * (Float.exp (-t / RC))
 
 -- Utility functions
 def abs (a : Float) : Float :=
   if a >= 0 then a else -a
-
-def zipWith (f : α → β → γ) : List α → List β → List γ
-  | [], _ => []
-  | _, [] => []
-  | a::as, b::bs => f a b :: zipWith f as bs
-
-def range (n : Nat) : List Nat :=
-  match n with
-  | 0 => []
-  | m+1 => range m ++ [m]
 
 -- Euler's method in concise functional style
 def euler (f : Float → Float → Float)
@@ -115,8 +104,8 @@ def generateCSV (results : List (List Float)) : String :=
   let ab3Values := results[4]!
 
   -- Build the header row with time points
-  let headerRow := "function," ++
-                   String.intercalate "," (timePoints.map (λ t => s!"t{t}"))
+  let headerRow := "time," ++
+                   String.intercalate "," (timePoints.map toString)
 
   -- Build the data rows
   let exactRow := "explicit," ++
@@ -140,7 +129,7 @@ def generateDiffCSV (results : List (List Float)) : String :=
 
   -- Build the header row with time points
   let headerRow := "function," ++
-                   String.intercalate "," (timePoints.map (λ t => s!"t{t}"))
+                   String.intercalate "," (timePoints.map toString)
 
   -- Build the data rows
   let eulerRow := "euler_diff," ++
@@ -163,15 +152,17 @@ def runSimulation (t0 : Float) (tMax : Float) (h : Float) : IO Unit := do
   let results := calculateAllSolutions f exactSolution t0 V0 h steps
 
   -- Generate CSV outputs
-  let solutionsCSV := generateCSV results
-  let diffsCSV := generateDiffCSV results
+  let solutionsCSV  := generateCSV results
+  let diffsCSV      := generateDiffCSV results
 
   -- Print the results
-  IO.println "SOLUTIONS:"
+  IO.println "<solutions>"
   IO.println solutionsCSV
+  IO.println "</solutions>"
   IO.println ""
-  IO.println "DIFFERENCES:"
+  IO.println "<differences>"
   IO.println diffsCSV
+  IO.println "</differences>"
 
 -- Run the simulation with specific parameters
 def main : IO Unit :=
@@ -179,5 +170,5 @@ def main : IO Unit :=
 
 end Project1
 
--- Execute the main function
-#eval Project1.main
+-- Uncomment for interactive result in the window
+-- #eval Project1.main

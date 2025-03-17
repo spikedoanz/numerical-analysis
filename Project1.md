@@ -168,9 +168,48 @@ done once at the start of the iteration. For future iterations,
 it will only have to use 2 evaluations: one for the predictor
 step, and the other for the corrector step.
 
-One elegant thing about functional languages is that the optimization
+One nice thing about functional languages is that the optimization
 mentioned above can be expressed very elegantly using 
 [pattern matching](https://en.wikipedia.org/wiki/Pattern_matching).
+
+
+# Analysis of the numerics
+
+```
+--- Metrics for Step Size 0.01 ---
++--------+---------------+-------------+-------------+-------------+--------------------+
+| Method | Initial Value | 50% at Time | 99% at Time | Total Error | Avg Relative Error |
++--------+---------------+-------------+-------------+-------------+--------------------+
+| euler  |    12.0000    |    0.8283   |    5.5032   |   5.995124  |      0.017275      |
+|  rk4   |    12.0000    |    0.8318   |    5.5262   |   0.000000  |      0.000000      |
+|  ab3   |    12.0000    |    0.8318   |    5.5262   |   0.000282  |      0.000000      |
+| ab3am2 |    12.0000    |    0.8318   |    5.5262   |   0.000000  |      0.000000      |
++--------+---------------+-------------+-------------+-------------+--------------------+
+
+
+--- Metrics for Step Size 0.08 ---
++--------+---------------+-------------+-------------+-------------+--------------------+
+| Method | Initial Value | 50% at Time | 99% at Time | Total Error | Avg Relative Error |
++--------+---------------+-------------+-------------+-------------+--------------------+
+| euler  |    12.0000    |    0.8039   |    5.3404   |   6.055020  |      0.133276      |
+|  rk4   |    12.0000    |    0.8324   |    5.5264   |   0.000028  |      0.000000      |
+|  ab3   |    12.0000    |    0.8323   |    5.5257   |   0.018755  |      0.000485      |
+| ab3am2 |    12.0000    |    0.8324   |    5.5265   |   0.002415  |      0.000065      |
++--------+---------------+-------------+-------------+-------------+--------------------+
+
+
+--- Metrics for Step Size 0.64 ---
++--------+---------------+-------------+-------------+-------------+--------------------+
+| Method | Initial Value | 50% at Time | 99% at Time | Total Error | Avg Relative Error |
++--------+---------------+-------------+-------------+-------------+--------------------+
+| euler  |    12.0000    |    0.6000   |    3.8782   |   6.525223  |      0.749062      |
+|  rk4   |    12.0000    |    0.8696   |    5.5699   |   0.023134  |      0.004509      |
+|  ab3   |    12.0000    |    0.8696   |    5.2821   |   0.975950  |      1.666252      |
+| ab3am2 |    12.0000    |    0.8696   |    5.6848   |   0.194688  |      0.111148      |
++--------+---------------+-------------+-------------+-------------+--------------------+
+```
+
+
 
 # Tangent on lean as a language 
 
@@ -243,4 +282,5 @@ promptly reconsidered when I realized that I had better things to
 do with my time than implementing a png compatible spec.
 
 So I regretfully relied on Python for this portion of the project.
-My sincerest apologies for this show of programmer ineptitude.
+My sincerest apologies for this show of programming ineptitude.
+

@@ -4,21 +4,20 @@ namespace NumericalAnalysis.ODESolvers
 def euler_step (f : Float → Float → Float) (t : Float) (y : Float) (h : Float) : Float :=
   y + h * f t y
 
--- Euler method implementation
 def euler (f : Float → Float → Float)
           (t0 : Float) (y0 : Float) (h : Float)
-          : Nat → List (Float × Float)
-  | 0 => [(t0, y0)]
-  | n + 1 =>
-      let prev := euler f t0 y0 h n
-      match prev with
-      | (tn, yn) :: _ =>
-          let tnew := tn + h
-          let ynew := euler_step f tn yn h
-          (tnew, ynew) :: prev
-      | _ => prev  -- Lean requires every case to be caught
+          (n : Nat) : List (Float × Float) :=
+  let rec aux : Nat → List (Float × Float) → List (Float × Float)
+    | 0, acc => acc
+    | n+1, acc =>
+        match acc with
+        | (tn, yn) :: _ =>
+            let tnew := tn + h
+            let ynew := euler_step f tn yn h
+            aux n ((tnew, ynew) :: acc)
+        | _ => acc
+  aux n [(t0, y0)]
 
--- RK4 single step
 def rk4_step (f : Float → Float → Float) (t : Float) (y : Float) (h : Float) : Float :=
   let k₁ := h * f t y
   let k₂ := h * f (t + h/2) (y + k₁/2)
@@ -26,19 +25,19 @@ def rk4_step (f : Float → Float → Float) (t : Float) (y : Float) (h : Float)
   let k₄ := h * f (t + h) (y + k₃)
   y + (k₁ + 2*k₂ + 2*k₃ + k₄)/6
 
--- RK4 method implementation
 def rk4 (f : Float → Float → Float)
         (t0 : Float) (y0 : Float) (h : Float)
-        : Nat → List (Float × Float)
-  | 0 => [(t0, y0)]
-  | n + 1 =>
-      let prev := rk4 f t0 y0 h n
-      match prev with
-      | (tn, yn) :: _ =>
-          let tnew := tn + h
-          let ynew := rk4_step f tn yn h
-          (tnew, ynew) :: prev
-      | _ => prev
+        (n : Nat) : List (Float × Float) :=
+  let rec aux : Nat → List (Float × Float) → List (Float × Float)
+    | 0, acc => acc
+    | n+1, acc =>
+        match acc with
+        | (tn, yn) :: _ =>
+            let tnew := tn + h
+            let ynew := rk4_step f tn yn h
+            aux n ((tnew, ynew) :: acc)
+        | _ => acc
+  aux n [(t0, y0)]
 
 -- AB3 single step (requires previous points)
 def ab3_step (f : Float → Float → Float)
@@ -56,20 +55,20 @@ def ab3 (f : Float → Float → Float)
   | 0 => [(t0, y0)]
   | 1 =>
     let t1 := t0 + h
-    let y1 := euler_step f t0 y0 h  -- Use Euler for first step
+    let y1 := rk4_step f t0 y0 h  -- Use rk4 for first step
     (t0, y0) :: [(t1, y1)]
   | 2 =>
     let prev := ab3 f t0 y0 h 1
     match prev with
     | (t1, y1) :: _ =>
       let t2 := t1 + h
-      let y2 := euler_step f t1 y1 h  -- Use Euler for second step
+      let y2 := rk4_step f t1 y1 h  -- Use rk4 for second step
       (t2, y2) :: prev
     | _ => prev
   | n + 1 =>
     let prev := ab3 f t0 y0 h n
     match prev with
-    | (tn, yn) :: (tn_1, yn_1) :: (tn_2, yn_2) :: rest =>
+    | (tn, yn) :: (tn_1, yn_1) :: (tn_2, yn_2) :: _rest =>
       -- We have at least 3 points, can use AB3 formula
       let tnew := tn + h
       let ynew := ab3_step f tn yn tn_1 yn_1 tn_2 yn_2 h
@@ -114,7 +113,7 @@ def ab3am2 (f : Float → Float → Float)
   | n + 1 =>
     let prev := ab3am2 f t0 y0 h n
     match prev with
-    | (tn, yn) :: (tn_1, yn_1) :: (tn_2, yn_2) :: rest =>
+    | (tn, yn) :: (tn_1, yn_1) :: (tn_2, yn_2) :: _rest =>
       -- We have at least 3 points, can use AB3-AM2
       let tnew := tn + h
       -- AB3 Predictor

@@ -78,10 +78,10 @@ def generateDiffCSV (results : List (List Float)) : String :=
 
   -- Build the csv
   let headerRow := "function,"    ++ String.intercalate "," (timePoints.map toString)
-  let eulerRow  := "euler_diff,"  ++ String.intercalate "," (eulerDiffs.map toString)
-  let rk4Row    := "rk4_diff,"    ++ String.intercalate "," (rk4Diffs.map toString)
-  let ab3Row    := "ab3_diff,"    ++ String.intercalate "," (ab3Diffs.map toString)
-  let ab3am2Row := "ab3am2_diff," ++ String.intercalate "," (ab3am2Diffs.map toString)
+  let eulerRow  := "euler,"  ++ String.intercalate "," (eulerDiffs.map toString)
+  let rk4Row    := "rk4,"    ++ String.intercalate "," (rk4Diffs.map toString)
+  let ab3Row    := "ab3,"    ++ String.intercalate "," (ab3Diffs.map toString)
+  let ab3am2Row := "ab3am2," ++ String.intercalate "," (ab3am2Diffs.map toString)
 
   String.intercalate "\n" [headerRow, eulerRow, rk4Row, ab3Row, ab3am2Row]
 
@@ -108,6 +108,7 @@ def runSimulation (t0 : Float) (tMax : Float) (h : Float) : IO Unit := do
 def main : IO Unit :=
   -- 1e-5 [0..1] seems to be the limit. Stack size limit on most
   -- computers is 10k, so this tracts
+  -- runSimulations t_start t_end step_size
   runSimulation 0.0 10.0 0.1
 
 end Project1

@@ -14,12 +14,9 @@ def f (t : Float) (V : Float) : Float := -V / RC
 
 def exactSolution (t : Float) : Float := V0 * exp (-t / RC)
 
-
--- Function to generate time points
 def generateTimePoints (t0 : Float) (h : Float) (n : Nat) : List Float :=
   range (n+1) |>.map (λ i => t0 + i.toFloat * h)
 
--- Function to calculate solutions from all methods and exact solution
 def calculateAllSolutions (f : Float → Float → Float)
                           (exact : Float → Float)
                           (t0 : Float) (y0 : Float) (h : Float) (steps : Nat)
@@ -85,7 +82,7 @@ def generateDiffCSV (results : List (List Float)) : String :=
 
   String.intercalate "\n" [headerRow, eulerRow, rk4Row, ab3Row, ab3am2Row]
 
--- Main simulation function (keeping as before)
+-- Main simulation function
 def runSimulation (t0 : Float) (tMax : Float) (h : Float) : IO Unit := do
   -- Hilariously, lean4 also doesn't have a Float->Nat function so
   -- this has to be done instead.
@@ -96,7 +93,9 @@ def runSimulation (t0 : Float) (tMax : Float) (h : Float) : IO Unit := do
   let solutionsCSV  := generateCSV results
   let diffsCSV      := generateDiffCSV results
 
-  -- Print the results (no built in csv library so i have to do jank)
+  -- Print the results with experiment tag
+  IO.println s!"<experiment stepsize={h}>"
+  IO.println s!"<step_size>step_size,{h}</step_size>"
   IO.println "<solutions>"
   IO.println solutionsCSV
   IO.println "</solutions>"
@@ -104,11 +103,14 @@ def runSimulation (t0 : Float) (tMax : Float) (h : Float) : IO Unit := do
   IO.println "<differences>"
   IO.println diffsCSV
   IO.println "</differences>"
+  IO.println "</experiment>"
 
-def main : IO Unit :=
-  -- 1e-5 [0..1] seems to be the limit. Stack size limit on most
-  -- computers is 10k, so this tracts
-  -- runSimulations t_start t_end step_size
-  runSimulation 0.0 10.0 0.1
+def main : IO Unit := do
+  -- List of step sizes (binary exponential from 0.01 to 2.56)
+  let stepSizes : List Float := [0.01, 0.02, 0.04, 0.08, 0.16, 0.32, 0.64, 1.28, 2.56]
+
+  -- Run simulation for each step size
+  for h in stepSizes do
+    runSimulation 0.0 10.0 h
 
 end Project1

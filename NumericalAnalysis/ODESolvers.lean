@@ -56,7 +56,7 @@ def ab3 (f : Float → Float → Float)
   | 1 =>
     let t1 := t0 + h
     let y1 := rk4_step f t0 y0 h  -- Use rk4 for first step
-    (t0, y0) :: [(t1, y1)]
+    (t1, y1) :: [(t0, y0)]
   | 2 =>
     let prev := ab3 f t0 y0 h 1
     match prev with
@@ -89,11 +89,11 @@ def ab3am2 (f : Float → Float → Float)
           (t0 : Float) (y0 : Float) (h : Float)
           : Nat → List (Float × Float)
   | 0 => [(t0, y0)]
-  | 1 =>
+  | 1 => -- RK4 for first step
     let t1 := t0 + h
     let y1 := rk4_step f t0 y0 h
-    (t0, y0) :: [(t1, y1)]
-  | 2 =>
+    (t1, y1) :: [(t0, y0)]
+  | 2 => -- RK4 for 2nd step
     let prev := ab3am2 f t0 y0 h 1
     match prev with
     | (t1, y1) :: _ =>
@@ -101,8 +101,7 @@ def ab3am2 (f : Float → Float → Float)
       let y2 := rk4_step f t1 y1 h
       (t2, y2) :: prev
     | _ => prev
-  | 3 =>
-    -- Use RK4 for third step
+  | 3 => -- Use RK4 for third step
     let prev := ab3am2 f t0 y0 h 2
     match prev with
     | (t2, y2) :: _ =>

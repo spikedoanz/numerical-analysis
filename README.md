@@ -40,7 +40,7 @@ Run visualization script (will read result.txt file)
 python viz.py
 ```
 
-In short, to rerun the experiments with changed parameters (this is run.sh)
+In short, to rerun the experiments with changed parameters (or just run.sh)
 ```
 lake build
 ./.lake/build/bin/numericalanalysis

@@ -1,4 +1,19 @@
-# Implementation details
+# Project 1
+
+```
+numerical-analysis § tree
+.
+├── NumericalAnalysis
+│   ├── ODESolvers.lean
+│   └── Project1.lean
+├── NumericalAnalysis.lean
+├── Project1.md
+├── README.md
+├── figures
+│   ├── ...
+├── run.sh
+└── viz.py
+```
 
 The ODE solver implementations sit in 
 NumericalAnalysis/ODESolvers.lean
@@ -49,6 +64,9 @@ Takes in the partial derivative and its parameters, evaluates
 it on some magical constants, spits out the approximation for
 the current time step.
 
+Uses 4 total function evaluations. All at the current step,
+so no fancy caching required.
+
 ### Structural iteration (rk4)
 
 ```
@@ -73,3 +91,156 @@ and evaluating f at the current point before appending it to
 the list of answers and using that evaluation for the next step.
 
 ---
+
+## AB3-AM2
+
+### Single step (am2_step)
+
+```
+def am2_step (f : Float → Float → Float)
+            (tn : Float) (yn : Float)
+            (tn_1 : Float) (yn_1 : Float)
+            (tnew : Float) (ynew_pred : Float)
+            (h : Float) : Float :=
+  -- AM2 formula: y_{n+1} = y_n + h/12 * (5*f(t_{n+1}, y_{n+1}^{(p)}) + 8*f(t_n, y_n) - f(t_{n-1}, y_{n-1}))
+  yn + h/12 * (5 * f tnew ynew_pred + 8 * f tn yn - f tn_1 yn_1)
+```
+
+Uses multiple function evaluations, at different timesteps.
+Uses the prediction evaluation for the current timestep from a
+different method (in this case AB3), and then further refines that
+prediction using an implicit method.
+
+Uses 2 total function evaluations (excluding cached steps
+from AB3)
+
+## Structural iteration (ab3am2)
+
+```
+def ab3am2 (f : Float → Float → Float)
+          (t0 : Float) (y0 : Float) (h : Float)
+          : Nat → List (Float × Float)
+  | 0 => [(t0, y0)]
+  | 1 => -- RK4 for first step
+    let t1 := t0 + h
+    let y1 := rk4_step f t0 y0 h
+    (t1, y1) :: [(t0, y0)]
+  | 2 => -- RK4 for 2nd step
+    let prev := ab3am2 f t0 y0 h 1
+    match prev with
+    | (t1, y1) :: _ =>
+      let t2 := t1 + h
+      let y2 := rk4_step f t1 y1 h
+      (t2, y2) :: prev
+    | _ => prev
+  | 3 => -- Use RK4 for third step
+    let prev := ab3am2 f t0 y0 h 2
+    match prev with
+    | (t2, y2) :: _ =>
+      let t3 := t2 + h
+      let y3 := rk4_step f t2 y2 h
+      (t3, y3) :: prev
+    | _ => prev
+  | n + 1 =>
+    let prev := ab3am2 f t0 y0 h n
+    match prev with
+    | (tn, yn) :: (tn_1, yn_1) :: (tn_2, yn_2) :: _rest =>
+      -- We have at least 3 points, can use AB3-AM2
+      let tnew := tn + h
+      -- AB3 Predictor
+      let ynew_pred := ab3_step f tn yn tn_1 yn_1 tn_2 yn_2 h
+      -- AM2 Corrector
+      let ynew := am2_step f tn yn tn_1 yn_1 tnew ynew_pred h
+      (tnew, ynew) :: prev
+    | _ => prev
+```
+
+This algorithm first uses 2 function approximations (using RK4)
+to achieve 3 points (for AB3 mostly, the predictor corrector method
+can work without cached points).
+
+It then plugs those 3 points into AB3, obtaining the predictor
+step of the evaluation, which is then plugged into the AM2_step,
+which does the fancy implicit method.
+
+For efficiency, the extra 2 function evaluations only has to be
+done once at the start of the iteration. For future iterations,
+it will only have to use 2 evaluations: one for the predictor
+step, and the other for the corrector step.
+
+One elegant thing about functional languages is that the optimization
+mentioned above can be expressed very elegantly using 
+[pattern matching](https://en.wikipedia.org/wiki/Pattern_matching).
+
+# Tangent on lean as a language 
+
+> Many (if not most) of these issues may go away with if handed
+> to a more experienced programmer, as this is my first time
+> using Lean in a practical setting.
+
+> This is mostly to explain the weirdness of my implementation, 
+> please feel free to skip if you feel that it is 
+> unrelated to the rubric.
+
+## 1. No mutability (for variables)
+
+Because functional languages forbid the changing of state, (if a
+number i is set to 0, it cannot be changed after), this also means
+that certain things that come naturally in other languages 
+become somewhat awkward in Lean.
+
+For loops cannot be used (since there can be no variable we can
+use for counting), though structural iteration is possible (by 
+iterating a function over a foldable structure like a list)
+
+This is why all of the algorithms implemented for this project
+have been written as a recursive form.
+
+## 2. No mutability (for other data structures)
+
+Again due to immutability, it is impossible to express something like
+
+```
+a := some list of length n
+a.set some index less than n to be some value
+```
+
+Since this would implicitly mutate the variable inside the array.
+
+So the solution is to structurally build up the array using the
+function itself. Here is an extremely consise version of euler's
+method:
+
+```
+def euler (f : Float → Float → Float)
+          (t0 : Float) (y0 : Float) (h : Float)
+          : Nat → List (Float × Float)
+  | 0 => [(t0, y0)]
+  | n + 1 => (t0, y0) :: euler f (t0 + h) (y0 + h * f t0 y0) h n
+```
+
+As we can see, there is no array being mutated, but instead the array
+is built up step by step as a consequence of following through the 
+recursive evaluation of the function.
+
+[Skill issue] Because I am inexperienced and do not know how to
+write good functional code, all of the methods implemented actually
+build the list in reverse (only prepend). This is easily
+fixed at evaluation time by reversing them, which is fortunately
+a free action in lean4 (since the reversal also doesn't mutate
+the list, only changes how it is accessed later)
+
+## 3. Very young languages don't have libraries
+
+Lean4 doesn't have many libraries for much of anything at all.
+I probably would fail the experiment if I had to do an http call.
+Included in this statement is the fact that Lean4 also doesn't have
+a library for naturally parsing and creating csvs, nor does it 
+have a library for plotting or creating tables.
+
+I briefly considered writing these myself for the project, but
+promptly reconsidered when I realized that I had better things to
+do with my time than implementing a png compatible spec.
+
+So I regretfully relied on Python for this portion of the project.
+My sincerest apologies for this show of programmer ineptitude.

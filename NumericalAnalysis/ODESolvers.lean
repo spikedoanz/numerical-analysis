@@ -13,9 +13,9 @@ def euler (f : Float → Float → Float)
       let prev := euler f t0 y0 h n
       match prev with
       | (tn, yn) :: _ =>
-          let tn_plus_1 := tn + h
-          let yn_plus_1 := euler_step f tn yn h
-          (tn_plus_1, yn_plus_1) :: prev
+          let tnew := tn + h
+          let ynew := euler_step f tn yn h
+          (tnew, ynew) :: prev
       | _ => prev  -- Lean requires every case to be caught
 
 -- RK4 single step
@@ -35,9 +35,9 @@ def rk4 (f : Float → Float → Float)
       let prev := rk4 f t0 y0 h n
       match prev with
       | (tn, yn) :: _ =>
-          let tn_plus_1 := tn + h
-          let yn_plus_1 := rk4_step f tn yn h
-          (tn_plus_1, yn_plus_1) :: prev
+          let tnew := tn + h
+          let ynew := rk4_step f tn yn h
+          (tnew, ynew) :: prev
       | _ => prev
 
 -- AB3 single step (requires previous points)
@@ -71,19 +71,19 @@ def ab3 (f : Float → Float → Float)
     match prev with
     | (tn, yn) :: (tn_1, yn_1) :: (tn_2, yn_2) :: rest =>
       -- We have at least 3 points, can use AB3 formula
-      let tn_plus_1 := tn + h
-      let yn_plus_1 := ab3_step f tn yn tn_1 yn_1 tn_2 yn_2 h
-      (tn_plus_1, yn_plus_1) :: prev
+      let tnew := tn + h
+      let ynew := ab3_step f tn yn tn_1 yn_1 tn_2 yn_2 h
+      (tnew, ynew) :: prev
     | _ => prev
 
 -- AM2 single step (requires predicted value and previous points)
 def am2_step (f : Float → Float → Float)
             (tn : Float) (yn : Float)
             (tn_1 : Float) (yn_1 : Float)
-            (tn_plus_1 : Float) (yn_plus_1_pred : Float)
+            (tnew : Float) (ynew_pred : Float)
             (h : Float) : Float :=
   -- AM2 formula: y_{n+1} = y_n + h/12 * (5*f(t_{n+1}, y_{n+1}^{(p)}) + 8*f(t_n, y_n) - f(t_{n-1}, y_{n-1}))
-  yn + h/12 * (5 * f tn_plus_1 yn_plus_1_pred + 8 * f tn yn - f tn_1 yn_1)
+  yn + h/12 * (5 * f tnew ynew_pred + 8 * f tn yn - f tn_1 yn_1)
 
 -- Predictor-Corrector (AB3-AM2) method
 def ab3am2 (f : Float → Float → Float)
@@ -116,12 +116,12 @@ def ab3am2 (f : Float → Float → Float)
     match prev with
     | (tn, yn) :: (tn_1, yn_1) :: (tn_2, yn_2) :: rest =>
       -- We have at least 3 points, can use AB3-AM2
-      let tn_plus_1 := tn + h
+      let tnew := tn + h
       -- AB3 Predictor
-      let yn_plus_1_pred := ab3_step f tn yn tn_1 yn_1 tn_2 yn_2 h
+      let ynew_pred := ab3_step f tn yn tn_1 yn_1 tn_2 yn_2 h
       -- AM2 Corrector
-      let yn_plus_1 := am2_step f tn yn tn_1 yn_1 tn_plus_1 yn_plus_1_pred h
-      (tn_plus_1, yn_plus_1) :: prev
+      let ynew := am2_step f tn yn tn_1 yn_1 tnew ynew_pred h
+      (tnew, ynew) :: prev
     | _ => prev
 
 end NumericalAnalysis.ODESolvers

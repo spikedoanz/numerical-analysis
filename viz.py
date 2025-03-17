@@ -43,10 +43,13 @@ diff_table.field_names = ["Method"] + list(differences_data.columns)
 for idx, row in differences_data.iterrows():
     diff_table.add_row([idx] + [round(val, decimals) for val in row])
 
+"""
 print("Solutions Table:")
 print(sol_table)
 print("\nDifferences Table:")
 print(diff_table)
+"""
 
 plt.savefig("result.png")
+print("Figures have been saved to results.png")
 #plt.show()

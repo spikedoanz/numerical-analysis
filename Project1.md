@@ -209,10 +209,6 @@ mentioned above can be expressed very elegantly using
 +--------+---------------+-------------+-------------+-------------+--------------------+
 ```
 
-Looking at these tables, I can't help but appreciate
-how they illustrate the classic trade-offs between
-simplicity, accuracy, and step size.
-
 At the small step size (0.01), almost all methods
 except Euler are performing excellently. RK4 and 
 AB3AM2 show essentially perfect results within
@@ -247,6 +243,30 @@ right numerical method isn't just about theoretical
 order of accuracy, but requires understanding
 stability properties and practical performance
 at your target step size.
+
+
+# Notes on efficiency
+
+In terms of raw number of function evaluations, the tier list is
+as follows:
+
+1. Euler : 1 eval per step
+
+2. AB3 : 1ish eval per step
+
+3. AB3-AM2: 2ish evals per step
+
+4. RK4 : 4 evals per step
+
+Because all of the methods don't really do anything special to the 
+evaluated functions beyond just some basic extra scalar operations,
+the main component of the cost will be the function evaluation itself.
+
+Another note though, is that both AB3 and AB3-AM2 require caching as a
+part of their evaluation scheme. So, if the function being evaluated
+has extremely large outputs (say, 10 million dimensional vector), then
+there is that memory cost. It is a constant multiple though, so 
+ultimately even this is not that significant of a cost.
 
 
 # Tangent on lean as a language 

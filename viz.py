@@ -23,9 +23,9 @@ ax1.legend(loc='upper right')
 ax1.grid(True)
 
 differences_data.T.plot(ax=ax2)
-ax2.set_title('Differences')
+ax2.set_title('Error')
 ax2.set_xlabel('Time')
-ax2.set_ylabel('Difference')
+ax2.set_ylabel('L1 Error')
 ax2.legend(loc='upper right')
 ax2.grid(True)
 

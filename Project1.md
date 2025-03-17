@@ -209,6 +209,44 @@ mentioned above can be expressed very elegantly using
 +--------+---------------+-------------+-------------+-------------+--------------------+
 ```
 
+Looking at these tables, I can't help but appreciate
+how they illustrate the classic trade-offs between
+simplicity, accuracy, and step size.
+
+At the small step size (0.01), almost all methods
+except Euler are performing excellently. RK4 and 
+AB3AM2 show essentially perfect results within
+floating point precision, while AB3 shows only
+microscopic errors. Poor Euler still lags with a
+noticeable total error of ~5.995, though it's
+not catastrophically off.
+
+As we increase to the medium step size (0.08), the
+hierarchy becomes more apparent. RK4 holds strong
+with negligible error, while AB3 begins showing 
+weakness. The predictor-corrector approach of
+AB3AM2 proves valuable here, keeping its error
+about 7-8 times lower than pure AB3. Euler is
+already in serious trouble, showing its
+inability to handle the 8x step size 
+increase gracefully.
+
+The large step size (0.64) really stress-tests these
+methods with revealing results. Euler completely loses
+the plot, with its 50% time estimate way off at
+0.6000 versus the ~0.87 suggested by other methods.
+The real surprise is AB3, which actually
+performs worse than Euler in terms of relative
+error!
+
+In brief, RK4 shows impressive resilience 
+despite the large step size, while 
+AB3AM2 hangs in there with reasonable
+accuracy. These results demonstrate why choosing the
+right numerical method isn't just about theoretical
+order of accuracy, but requires understanding
+stability properties and practical performance
+at your target step size.
 
 
 # Tangent on lean as a language 

@@ -1,4 +1,5 @@
 namespace NumericalAnalysis.ODESolvers
+
 -- Euler single step
 def euler_step (f : Float → Float → Float) (t : Float) (y : Float) (h : Float) : Float :=
   y + h * f t y
@@ -25,24 +26,6 @@ def rk4_step (f : Float → Float → Float) (t : Float) (y : Float) (h : Float)
   let k₄ := h * f (t + h) (y + k₃)
   y + (k₁ + 2*k₂ + 2*k₃ + k₄)/6
 
--- AB3 single step (requires previous points)
-def ab3_step (f : Float → Float → Float)
-            (tn : Float) (yn : Float)
-            (tn_1 : Float) (yn_1 : Float)
-            (tn_2 : Float) (yn_2 : Float)
-            (h : Float) : Float :=
-  -- AB3 formula: y_{n+1} = y_n + h/12 * (23f_n - 16f_{n-1} + 5f_{n-2})
-  yn + h/12 * (23 * f tn yn - 16 * f tn_1 yn_1 + 5 * f tn_2 yn_2)
-
--- AM2 single step (requires predicted value and previous points)
-def am2_step (f : Float → Float → Float)
-            (tn : Float) (yn : Float)
-            (tn_1 : Float) (yn_1 : Float)
-            (tn_plus_1 : Float) (yn_plus_1_pred : Float)
-            (h : Float) : Float :=
-  -- AM2 formula: y_{n+1} = y_n + h/12 * (5*f(t_{n+1}, y_{n+1}^{(p)}) + 8*f(t_n, y_n) - f(t_{n-1}, y_{n-1}))
-  yn + h/12 * (5 * f tn_plus_1 yn_plus_1_pred + 8 * f tn yn - f tn_1 yn_1)
-
 -- RK4 method implementation
 def rk4 (f : Float → Float → Float)
         (t0 : Float) (y0 : Float) (h : Float)
@@ -55,7 +38,16 @@ def rk4 (f : Float → Float → Float)
           let tn_plus_1 := tn + h
           let yn_plus_1 := rk4_step f tn yn h
           (tn_plus_1, yn_plus_1) :: prev
-      | _ => prev  -- Lean4 requires all cases in a pattern match to be caught
+      | _ => prev
+
+-- AB3 single step (requires previous points)
+def ab3_step (f : Float → Float → Float)
+            (tn : Float) (yn : Float)
+            (tn_1 : Float) (yn_1 : Float)
+            (tn_2 : Float) (yn_2 : Float)
+            (h : Float) : Float :=
+  -- AB3 formula: y_{n+1} = y_n + h/12 * (23f_n - 16f_{n-1} + 5f_{n-2})
+  yn + h/12 * (23 * f tn yn - 16 * f tn_1 yn_1 + 5 * f tn_2 yn_2)
 
 -- AB3 method implementation
 def ab3 (f : Float → Float → Float)
@@ -83,6 +75,15 @@ def ab3 (f : Float → Float → Float)
       let yn_plus_1 := ab3_step f tn yn tn_1 yn_1 tn_2 yn_2 h
       (tn_plus_1, yn_plus_1) :: prev
     | _ => prev
+
+-- AM2 single step (requires predicted value and previous points)
+def am2_step (f : Float → Float → Float)
+            (tn : Float) (yn : Float)
+            (tn_1 : Float) (yn_1 : Float)
+            (tn_plus_1 : Float) (yn_plus_1_pred : Float)
+            (h : Float) : Float :=
+  -- AM2 formula: y_{n+1} = y_n + h/12 * (5*f(t_{n+1}, y_{n+1}^{(p)}) + 8*f(t_n, y_n) - f(t_{n-1}, y_{n-1}))
+  yn + h/12 * (5 * f tn_plus_1 yn_plus_1_pred + 8 * f tn yn - f tn_1 yn_1)
 
 -- Predictor-Corrector (AB3-AM2) method
 def ab3am2 (f : Float → Float → Float)
@@ -116,13 +117,10 @@ def ab3am2 (f : Float → Float → Float)
     | (tn, yn) :: (tn_1, yn_1) :: (tn_2, yn_2) :: rest =>
       -- We have at least 3 points, can use AB3-AM2
       let tn_plus_1 := tn + h
-
       -- AB3 Predictor
       let yn_plus_1_pred := ab3_step f tn yn tn_1 yn_1 tn_2 yn_2 h
-
       -- AM2 Corrector
       let yn_plus_1 := am2_step f tn yn tn_1 yn_1 tn_plus_1 yn_plus_1_pred h
-
       (tn_plus_1, yn_plus_1) :: prev
     | _ => prev
 

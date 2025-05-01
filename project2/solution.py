@@ -1,4 +1,5 @@
 from typing import List, Any 
+from time import time
 from functools import reduce
 from utils import (
   get_small_system,
@@ -12,29 +13,30 @@ linf = lambda x, x_hat : max([abs(_x - _x_hat) for _x, _x_hat in zip(x, x_hat)])
 def augment (a : List[List[float]], b : List[float]) -> List[List[float]]:
   return [_a + [_b] for _a, _b in zip(a, b)]
 
-def gaussian_elimination(A: List[List[float]]) -> List[List[float]]:
-    if len(A) == 0: return []
-    N, M = len(A), len(A[0])
-    row_idx = list(range(N))
-    for k in range(N):
-        max_row = k
-        max_val = abs(A[row_idx[k]][k])
+def gaussian_elimination(a: List[List[float]], b : List[float]) -> List[List[float]]:
+  A = augment(a,b) 
+  if len(A) == 0: return []
+  N, M = len(A), len(A[0])
+  row_idx = list(range(N))
+  for k in range(N):
+    max_row = k
+    max_val = abs(A[row_idx[k]][k])
+    
+    for i in range(k+1, N):
+      if abs(A[row_idx[i]][k]) > max_val:
+        max_val = abs(A[row_idx[i]][k])
+        max_row = i
+    
+    if max_row != k:
+      row_idx[k], row_idx[max_row] = row_idx[max_row], row_idx[k]
+    if abs(A[row_idx[k]][k]) < 1e-10: continue
         
-        for i in range(k+1, N):
-            if abs(A[row_idx[i]][k]) > max_val:
-                max_val = abs(A[row_idx[i]][k])
-                max_row = i
-        
-        if max_row != k:
-            row_idx[k], row_idx[max_row] = row_idx[max_row], row_idx[k]
-        if abs(A[row_idx[k]][k]) < 1e-10: continue
-            
-        for i in range(k+1, N):
-            m = A[row_idx[i]][k] / A[row_idx[k]][k]
-            for j in range(k, M):
-                A[row_idx[i]][j] = A[row_idx[i]][j] - m * A[row_idx[k]][j]
-    result = [A[row_idx[i]][:] for i in range(N)]
-    return result
+    for i in range(k+1, N):
+      m = A[row_idx[i]][k] / A[row_idx[k]][k]
+      for j in range(k, M):
+        A[row_idx[i]][j] = A[row_idx[i]][j] - m * A[row_idx[k]][j]
+  result = [A[row_idx[i]][:] for i in range(N)]
+  return result
 
 def backsubstitution(A : List[List[float]]) -> List[float]:
   N, M = len(A)-1, len(A[0])-1
@@ -45,7 +47,12 @@ def backsubstitution(A : List[List[float]]) -> List[float]:
     x[i] = (A[i][M] - Σaijxj)/A[i][i]
   return x
 
-def gauss_seidel(A: List[List[float]], max_iter = 10000, ε = 1e-10) -> List[float]:
+def residual(a : List[List[float]], b : List[float], x : List[float]) -> List[float]:
+  return []
+
+def gauss_seidel(a: List[List[float]], b : List[float], 
+                 max_iter = 10000, ε = 1e-10) -> List[float]:
+  A = augment(a,b)
   N, M = len(A)-1, len(A[0])-1
   x : List[float]  = [0.0 for _ in range(N+1)]
   for k in range(max_iter):
@@ -58,22 +65,47 @@ def gauss_seidel(A: List[List[float]], max_iter = 10000, ε = 1e-10) -> List[flo
   return x
 
 
-
 if __name__ == "__main__":
-  a, b, x = get_large_system("A.csv", "b.csv", "x.csv")
+  print("  == SMALL SYSTEM ==")
+  a, b = get_small_system()
+  x = [8, 6, 7, 5, 3]
 
-  ge_x = backsubstitution(
-    gaussian_elimination(
-      augment(a,b)
-    )
-  )
+  ge_start = time()
+  ge_x = backsubstitution(gaussian_elimination(a,b))
+  ge_time = time() - ge_start
+
   print("== Gaussian elimination with partial pivoting ==")
   print("L1 : " + str(l1(x, ge_x)))
   print("L2 : " + str(l2(x, ge_x)))
   print("L∞ : " + str(linf(x, ge_x)))
+  print("Solve time : " + str(ge_time))
 
-  gs_x = gauss_seidel(augment(a,b))
+  gs_start = time()
+  gs_x = gauss_seidel(a,b)
+  gs_time = time() - gs_start
   print("== Gauss Seidel ================================")
   print("L1 : " + str(l1(x, gs_x)))
   print("L2 : " + str(l2(x, gs_x)))
   print("L∞ : " + str(linf(x, gs_x)))
+  print("Solve time : " + str(gs_time))
+
+  print("\n\n  == BIG SYSTEM ==")
+  a, b, x = get_large_system("A.csv", "b.csv", "x.csv")
+
+  ge_start = time()
+  ge_x = backsubstitution(gaussian_elimination(a,b))
+  ge_time = time() - ge_start
+  print("== Gaussian elimination with partial pivoting ==")
+  print("L1 : " + str(l1(x, ge_x)))
+  print("L2 : " + str(l2(x, ge_x)))
+  print("L∞ : " + str(linf(x, ge_x)))
+  print("Solve time : " + str(ge_time))
+
+  gs_start = time()
+  gs_x = gauss_seidel(a,b)
+  gs_time = time() - gs_start
+  print("== Gauss Seidel ================================")
+  print("L1 : " + str(l1(x, gs_x)))
+  print("L2 : " + str(l2(x, gs_x)))
+  print("L∞ : " + str(linf(x, gs_x)))
+  print("Solve time : " + str(gs_time))

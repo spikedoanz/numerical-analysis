@@ -180,17 +180,3 @@ The choice between these methods should consider:
 4. **Convergence Criteria**: The standard difference-based convergence criterion offers an excellent compromise between accuracy and speed for iterative methods. The residual-based criterion, while theoretically sound, imposes excessive computational costs that negate the advantages of iterative methods.
 
 These findings suggest that for large-scale scientific computing applications with well-conditioned matrices, iterative methods like Gauss-Seidel are preferable, while direct methods remain valuable for smaller systems or when exact solutions are required.
-
----
-
-## Findings
-
-
----
-
-## Compute comparison
-
-
----
-
-## Performance and accuracy

@@ -60,8 +60,8 @@ def gauss_seidel(a: List[List[float]], b : List[float],
   for k in range(max_iter):
     x_last = [_x for _x in x] # just in case reference semantics fail me
     for i in range(N):
-      Σ1 = sum(A[i][j] * x[j] for j in range(i))  # Use updated values
-      Σ2 = sum(A[i][j] * x_last[j] for j in range(i+1, N))  # Use previous values
+      Σ1 = sum(A[i][j] * x[j] for j in range(i))
+      Σ2 = sum(A[i][j] * x_last[j] for j in range(i+1, N))
       x[i] = (A[i][M] - Σ1 - Σ2) / A[i][i]
     if linf(x, x_last) < ε: break
     if linf(x, residual(a,b,x)) < ε: break

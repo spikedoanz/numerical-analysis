@@ -21,5 +21,13 @@ def gaussian_elimination(A : List[List[float]]) -> List[List[float]]:
         A[i][j] = A[i][j] - m * A[k][j]
   return A
 
+def backsubstitution(A : List[List[float]]) -> List[float]:
+  N, M = len(A), len(A[0])
+  x = [0 for _ in range(N)]
+  x[N] = A[N][M]/A[N][N]
+  for i in range(N,0,-1):
+    Σaijxj = sum([ A[i][j] * x[j] for j in range(i+1, N)])
+    x_i = (A[i][M] - Σaijxj)/A[i][i]
+  return x
 
-print(gaussian_elimination(augment(a,b)))
+print(backsubstitution(gaussian_elimination(augment(a,b))))

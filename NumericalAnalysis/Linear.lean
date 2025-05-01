@@ -29,7 +29,6 @@ def E1 := a[1]
 
 
 /-
-
 let ret := #[]
 for i in List.range a.size
   -- partial pivot
@@ -38,4 +37,7 @@ for i in List.range a.size
     ret.push (a[j].zip a[i]).map (λ t => t.1 - m * t.2)
 -/
 
+def gaussianElimination (a: Array (Array Float)) : Array (Array Float) :=
+  a
 
+#eval gaussianElimination a

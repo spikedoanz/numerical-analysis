@@ -48,7 +48,9 @@ def backsubstitution(A : List[List[float]]) -> List[float]:
   return x
 
 def residual(a : List[List[float]], b : List[float], x : List[float]) -> List[float]:
-  return []
+  N = len(a)-1
+  y = [sum([a[i][j] * x[j] for j in range(N)]) for i in range(N)]
+  return [_y - _b for _y, _b in zip(y,b)]
 
 def gauss_seidel(a: List[List[float]], b : List[float], 
                  max_iter = 10000, ε = 1e-10) -> List[float]:
@@ -62,6 +64,7 @@ def gauss_seidel(a: List[List[float]], b : List[float],
       Σ2 = sum(A[i][j] * x_last[j] for j in range(i+1, N))  # Use previous values
       x[i] = (A[i][M] - Σ1 - Σ2) / A[i][i]
     if linf(x, x_last) < ε: break
+    if linf(x, residual(a,b,x)) < ε: break
   return x
 
 

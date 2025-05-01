@@ -27,9 +27,8 @@ def gaussian_elimination(a: List[List[float]], b : List[float]) -> List[List[flo
         max_val = abs(A[row_idx[i]][k])
         max_row = i
     
-    if max_row != k:
-      row_idx[k], row_idx[max_row] = row_idx[max_row], row_idx[k]
-    if abs(A[row_idx[k]][k]) < 1e-10: continue
+    if max_row != k: row_idx[k], row_idx[max_row] = row_idx[max_row], row_idx[k]
+    if abs(A[row_idx[k]][k]) < 1e-10: continue # thou shalt not divide by small numbers
         
     for i in range(k+1, N):
       m = A[row_idx[i]][k] / A[row_idx[k]][k]
@@ -53,18 +52,21 @@ def residual(a : List[List[float]], b : List[float], x : List[float]) -> List[fl
   return [_y - _b for _y, _b in zip(y,b)]
 
 def gauss_seidel(a: List[List[float]], b : List[float], 
-                 max_iter = 10000, ε = 1e-10) -> List[float]:
+                 max_iter = 10000, ε = 1e-10,
+                 use_residual=False) -> List[float]:
   A = augment(a,b)
   N, M = len(A)-1, len(A[0])-1
   x : List[float]  = [0.0 for _ in range(N+1)]
   for k in range(max_iter):
     x_last = [_x for _x in x] # just in case reference semantics fail me
-    for i in range(N):
+    for i in range(N+1):
       Σ1 = sum(A[i][j] * x[j] for j in range(i))
-      Σ2 = sum(A[i][j] * x_last[j] for j in range(i+1, N))
+      Σ2 = sum(A[i][j] * x_last[j] for j in range(i+1, N+1))
       x[i] = (A[i][M] - Σ1 - Σ2) / A[i][i]
-    if linf(x, x_last) < ε: break
-    if linf(x, residual(a,b,x)) < ε: break
+    if use_residual:
+      if linf(x, residual(a,b,x)) < ε: break
+    else:
+      if linf(x, x_last) < ε: break
   return x
 
 
@@ -86,11 +88,20 @@ if __name__ == "__main__":
   gs_start = time()
   gs_x = gauss_seidel(a,b)
   gs_time = time() - gs_start
-  print("== Gauss Seidel ================================")
+  print("== gauss seidel with |x - x_last| residual =====")
+  print("l1 : " + str(l1(x, gs_x)))
+  print("l2 : " + str(l2(x, gs_x)))
+  print("l∞ : " + str(linf(x, gs_x)))
+  print("solve time : " + str(gs_time))
+
+  gs_start = time()
+  gs_x = gauss_seidel(a,b,use_residual=True)
+  gs_time_ax = time() - gs_start
+  print("== Gauss Seidel with Ax - b residual  ==========")
   print("L1 : " + str(l1(x, gs_x)))
   print("L2 : " + str(l2(x, gs_x)))
   print("L∞ : " + str(linf(x, gs_x)))
-  print("Solve time : " + str(gs_time))
+  print("Solve time : " + str(gs_time_ax))
 
   print("\n\n  == BIG SYSTEM ==")
   a, b, x = get_large_system("A.csv", "b.csv", "x.csv")
@@ -112,3 +123,31 @@ if __name__ == "__main__":
   print("L2 : " + str(l2(x, gs_x)))
   print("L∞ : " + str(linf(x, gs_x)))
   print("Solve time : " + str(gs_time))
+
+
+  gs_start = time()
+  gs_x = gauss_seidel(a,b)
+  gs_time = time() - gs_start
+  print("== Gauss Seidel with Ax - b residual  ==========")
+  print("L1 : " + str(l1(x, gs_x)))
+  print("L2 : " + str(l2(x, gs_x)))
+  print("L∞ : " + str(linf(x, gs_x)))
+  print("Solve time : " + str(gs_time))
+
+  gs_start = time()
+  gs_x = gauss_seidel(a,b,use_residual=True)
+  gs_time_ax = time() - gs_start
+  print("== Gauss Seidel with Ax - b residual  ==========")
+  print("L1 : " + str(l1(x, gs_x)))
+  print("L2 : " + str(l2(x, gs_x)))
+  print("L∞ : " + str(linf(x, gs_x)))
+  print("Solve time : " + str(gs_time_ax))
+
+
+  print("  == Speed analysis ==")
+  times = [ge_time, gs_time, gs_time_ax]
+  factors = [
+    [round(a / b,4) for a in times] for b in times
+  ]
+  for f in factors: # this matrix shows relative speedups of different methods
+    print(f)

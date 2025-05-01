@@ -151,7 +151,7 @@ The speed comparison matrix reveals the relative performance clearly:
 [0.0024, 0.0006, 1.0]    // GS-residual vs GE vs GS
 ```
 
-#### Computational Cost Analysis
+### Computational Cost Analysis
 
 The results align with theoretical expectations:
 
@@ -167,7 +167,7 @@ The results align with theoretical expectations:
    - For the small system, direct methods provide superior accuracy
    - For the large system, both methods achieve comparable accuracy, suggesting that for well-conditioned matrices, iterative methods can be just as accurate as direct methods
 
-#### Performance and Accuracy Implications
+### Performance and Accuracy Implications
 
 The choice between these methods should consider:
 
@@ -180,3 +180,15 @@ The choice between these methods should consider:
 4. **Convergence Criteria**: The standard difference-based convergence criterion offers an excellent compromise between accuracy and speed for iterative methods. The residual-based criterion, while theoretically sound, imposes excessive computational costs that negate the advantages of iterative methods.
 
 These findings suggest that for large-scale scientific computing applications with well-conditioned matrices, iterative methods like Gauss-Seidel are preferable, while direct methods remain valuable for smaller systems or when exact solutions are required.
+
+
+### Challenges
+
+The Python implementation was incredibly straight forward and involved no real roadblocks.
+
+I, however, also spent 2 days trying to get this to work in lean4, which was a monumentally difficult task that I ultimately failed. Here are the core reasons why I failed to implement Gaussian Elimination and Gauss Seidel in a pure, dependently typed, and functional langauge:
+- Indexing an array is non-trivial: Lean4 requires absolute certainty that programs are valid. Thus it is not enough to simply "prove" by construction that an i is a valid index for some array A (say, by declaring i as i in range(len(A))). More accurately, it is possible to prove via construction, but that proof needs to be carried around (as a boolean proof/statement) should i pass off something to a subroutine (like backsubstitution).
+- Nesting uniform length arrays into another array is also non-trivial: Lean4 does not care that I explicitly declared something as a nested array containing uniform length arrays. len(A[0]) is not at all guaranteed to be the same as len(A[1]). It is my job to prove this, every single time A is passed into a new scope, **always**.
+- Reading a file is non-trivial: as a pure functional language, lean4 cannot simply "read a file", because "read a file" involves invoking side effects. Therefore, it cannot simply do read("somepath") and return, say, a string. It must, instead, encapsulate that read operation, and everything it touches, around a [Monadic](https://en.wikipedia.org/wiki/Monadic) IO type. This disables about half the features available to the langauge, such as: #eval for printing stuff or #check for seeing types. This made testing and development completely hellish.
+
+So after the 2 days of spam programming this in Lean4, I promptly gave up the next day. The python version by comparison, was completed in a single sitting.

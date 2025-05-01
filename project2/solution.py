@@ -1,13 +1,16 @@
-from typing import List 
+from typing import List, Any 
 from functools import reduce
 from utils import (
   get_small_system,
   get_large_system
 )
 
+l1   = lambda x, x_hat : sum([abs(_x - _x_hat) for _x, _x_hat in zip(x, x_hat)])
+l2   = lambda x, x_hat : sum([(_x - _x_hat)**2 for _x, _x_hat in zip(x, x_hat)]) ** (0.5)
+linf = lambda x, x_hat : max([abs(_x - _x_hat) for _x, _x_hat in zip(x, x_hat)])
+
 def augment (a : List[List[float]], b : List[float]) -> List[List[float]]:
   return [_a + [_b] for _a, _b in zip(a, b)]
-
 
 def gaussian_elimination(A: List[List[float]]) -> List[List[float]]:
     if len(A) == 0: return []
@@ -42,18 +45,35 @@ def backsubstitution(A : List[List[float]]) -> List[float]:
     x[i] = (A[i][M] - Σaijxj)/A[i][i]
   return x
 
-a, b, x = get_large_system("A.csv", "b.csv", "x.csv")
+def gauss_seidel(A: List[List[float]], max_iter = 10000, ε = 1e-10) -> List[float]:
+  N, M = len(A)-1, len(A[0])-1
+  x : List[float]  = [0.0 for _ in range(N+1)]
+  for k in range(max_iter):
+    x_last = [_x for _x in x] # just in case reference semantics fail me
+    for i in range(N):
+      Σ1 = sum(A[i][j] * x[j] for j in range(i))  # Use updated values
+      Σ2 = sum(A[i][j] * x_last[j] for j in range(i+1, N))  # Use previous values
+      x[i] = (A[i][M] - Σ1 - Σ2) / A[i][i]
+    if linf(x, x_last) < ε: break
+  return x
 
-ge_x = backsubstitution(
-  gaussian_elimination(
-    augment(a,b)
+
+
+if __name__ == "__main__":
+  a, b, x = get_large_system("A.csv", "b.csv", "x.csv")
+
+  ge_x = backsubstitution(
+    gaussian_elimination(
+      augment(a,b)
+    )
   )
-)
+  print("== Gaussian elimination with partial pivoting ==")
+  print("L1 : " + str(l1(x, ge_x)))
+  print("L2 : " + str(l2(x, ge_x)))
+  print("L∞ : " + str(linf(x, ge_x)))
 
-l1 = lambda x, x_hat : sum([abs(_x - _x_hat) for _x, _x_hat in zip(x, x_hat)])
-l2 = lambda x, x_hat : sum([(_x - _ge_x)**2 for _x, _ge_x in zip(ge_x, x)]) ** (0.5)
-l∞ = lambda x, x_hat : max([abs(_x - _x_hat) for _x, _x_hat in zip(x, x_hat)])
-
-print(l1(x, ge_x))
-print(l2(x, ge_x))
-print(l∞(x, ge_x))
+  gs_x = gauss_seidel(augment(a,b))
+  print("== Gauss Seidel ================================")
+  print("L1 : " + str(l1(x, gs_x)))
+  print("L2 : " + str(l2(x, gs_x)))
+  print("L∞ : " + str(linf(x, gs_x)))

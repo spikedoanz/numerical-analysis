@@ -1,11 +1,7 @@
 from typing import List 
-
-a : List[List[float]] = [
-    [1,2,3],
-    [4,5,6],
-    [7,8,10],
-]
-b : List[float] = [0,0,0]
+from utils import (
+  get_small_system
+)
 
 def augment (a : List[List[float]], b : List[float]) -> List[List[float]]:
   return [_a + [_b] for _a, _b in zip(a, b)]
@@ -22,12 +18,20 @@ def gaussian_elimination(A : List[List[float]]) -> List[List[float]]:
   return A
 
 def backsubstitution(A : List[List[float]]) -> List[float]:
-  N, M = len(A), len(A[0])
-  x = [0 for _ in range(N)]
+  N, M = len(A)-1, len(A[0])-1
+  x : List[float]  = [0.0 for _ in range(N+1)]
   x[N] = A[N][M]/A[N][N]
-  for i in range(N,0,-1):
-    Σaijxj = sum([ A[i][j] * x[j] for j in range(i+1, N)])
-    x_i = (A[i][M] - Σaijxj)/A[i][i]
+  for i in range(N,-1,-1):
+    Σaijxj = sum([ A[i][j] * x[j] for j in range(i+1, N+1)])
+    x[i] = (A[i][M] - Σaijxj)/A[i][i]
   return x
 
-print(backsubstitution(gaussian_elimination(augment(a,b))))
+a, b = get_small_system()
+
+print(
+  backsubstitution(
+    gaussian_elimination(
+      augment(a,b)
+    )
+  )
+)

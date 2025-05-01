@@ -52,5 +52,8 @@ ge_x = backsubstitution(
 
 l1 = lambda x, x_hat : sum([abs(_x - _x_hat) for _x, _x_hat in zip(x, x_hat)])
 l2 = lambda x, x_hat : sum([(_x - _ge_x)**2 for _x, _ge_x in zip(ge_x, x)]) ** (0.5)
+l∞ = lambda x, x_hat : max([abs(_x - _x_hat) for _x, _x_hat in zip(x, x_hat)])
+
 print(l1(x, ge_x))
 print(l2(x, ge_x))
+print(l∞(x, ge_x))
